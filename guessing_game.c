@@ -4,29 +4,7 @@
 #include<ctype.h>
 
 int min = 1, max = 999;
-
-int game(){
-    printf("Who do you want to start: \n1.Computer guesses the number\n2. You guess the number\n");
-    int turn;
-    scanf("%d", &turn);
-    if(turn == 1){
-        comp_guessing();
-    }else if(turn == 2){
-        user_guessing();
-    }else{
-        printf("Invalid answer!\n");
-        game();
-    }
-}
-
-void start_over(){
-    printf("Do you want to play again: 1 - start again, 0 - quit\n");
-    int answer;
-    scanf("%d", &answer);
-    if(answer == 1){
-        game();
-    }
-}
+void start_over();
 
 int computer_choice(){
     /*
@@ -36,7 +14,6 @@ int computer_choice(){
     Output:
         integer: (a random number between 1 and 9)
     */
-    srand(time(0));
     return rand() % (max - min + 1) + min;
 }
 
@@ -117,7 +94,34 @@ int comp_guessing(){
     start_over();
 }
 
+int game(){
+    printf("Who do you want to start: \n1.Computer guesses the number\n2. You guess the number\n");
+    int turn;
+    scanf("%d", &turn);
+    if(turn == 1){
+        comp_guessing();
+    }else if(turn == 2){
+        user_guessing();
+    }else{
+        printf("Invalid answer!\n");
+        game();
+    }
+}
+
+void start_over(){
+    printf("Do you want to play again: 1 - start again, 0 - quit\n");
+    int answer;
+    scanf("%d", &answer);
+    if(answer == 1){
+        min = 1;
+        max = 999;
+        game();
+    }
+}
+
+
 int main(){
+    srand(time(NULL));
     game();
     return 0;
 }
