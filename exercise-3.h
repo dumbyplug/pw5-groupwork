@@ -7,6 +7,6 @@ void showCard(CARD card);
 void showCards(CARD cards[], int length);
 
 #include <stdio.h>
-#include "ex3_show_cards.c"
+#include "exercise-3-show-cards.c"
 #include <stdlib.h>
 #include <time.h>

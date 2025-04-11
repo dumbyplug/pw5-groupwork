@@ -1,4 +1,4 @@
-#include "ex3.h"
+#include "exercise-3.h"
 
 #define TOTAL_CARDS 52
 #define PLAYER_COUNT 2
