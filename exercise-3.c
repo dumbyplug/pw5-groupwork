@@ -70,95 +70,76 @@ int point_of_card(CARD card) {
     return 0;
 }
 
-int deleteCard(CARD hand[], int index){
-	if(hand[index] == NULL_CARD){
-		return 1;
-	}
-
+void deleteCard(CARD cards[], int index, int size){
 	int card;
-	CARD play = hand[index];
-	for(card = index; card < CARDS_PER_PLAYER - 1; card++){
-		hand[card] = hand[card + 1];
+	for(card = index; card < size - 1; card++){
+		cards[card] = cards[card + 1];
 	}
-	hand[card] = NULL_CARD;
-	return 0;
+	cards[card] = NULL_CARD;
 }
 
 void play_turn(CARD hand[], CARD board[], int *boardSize) {
+	int i, card, value, numCards = 0;
 
-
-	int numCards = 0;
-
+	// getting the number of cards of this player
 	char nullCardCheck;
 	do {
 		nullCardCheck = hand[numCards] != NULL_CARD;
 	} while(nullCardCheck && (++numCards < CARDS_PER_PLAYER));
 
 
+	// printing cards with indexes
     showCards(hand, numCards);
+	for(i = 0; i < numCards; i++)
+		printf("  (%d)  ", i + 1);
+	printf("\n");
 
-	int card;
+	// getting input from user
 	CARD play;
+	char run = 1;
 	do {
 		printf("Choose a playable card to play: ");
 		scanf("%d", &card);
+		scanf("%*[^\n]");
 
-    	play = hand[card - 1];
-	} while(deleteCard(hand, card - 1));
+		if((card <= numCards) && (card > 0)){
+    		play = hand[card - 1];
+			deleteCard(hand, card - 1, CARDS_PER_PLAYER);
+			run = 0;
+		}
+
+	} while(run);
 
 
-    int val = play % 100;
+    value = play % 100;
 
     printf("Playing: \n");
     showCard(play);
 
+	// if the card is jack and there is card on board, clear the board
+	if((value == 11) && (*boardSize > 0)){
+		*boardSize = 0; 
+		return;
+	}
 
-    printf("\n");
+	// removes the cards, which match with the played card
+	char match = 0;
+	for(card = 0; card < *boardSize; card++){
+		if(value == board[card] % 100){
+			deleteCard(board, card, *boardSize);
+	        (*boardSize)--;
+			match = 1;
+			card = 0;
+		} 
+	}
+
+	// if there is match, end function
+	if(match)
+		return;
+
+	// add the card to the board
 	board[*boardSize] = play;
 	(*boardSize)++;
-	/*
-    if (val == 11) {  // Jack: take all cards
-        if (board_size > 0) {
-            scores[player_id] += 1;
-            for (int b = 0; b < board_size; b++) {
-                scores[player_id] += point_of_card(board[b]);
-                collected[player_id]++;
-            }
-            printf("Jack played! Taking all cards.\n");
-            board_size = 0;
-        }
-    } 
-	int found = 0;
-	for (int b = 0; b < board_size; b++) {
-	    if (board[b] % 100 == val) {
-	        // Pairing
-	        scores[player_id] += point_of_card(play) + point_of_card(board[b]);
-	        collected[player_id] += 2;
-	        printf("Pairing with:\n");
-	        showCard(board[b]);
-	        printf("\n");
-	
-	        // Bastra: only 1 card on board + not a jack
-	        if (board_size == 1) {
-	            printf("BASRA!\n");
-	            scores[player_id] += 10;
-	        }
-	
-	        // Remove paired card
-	        for (int j = b; j < board_size - 1; j++) {
-	            board[j] = board[j + 1];
-	        }
-	        board_size--;
-	        found = 1;
-	        break;
-	    }
-	}
-	
-	if (!found) {
-	    board[board_size++] = play;
-	    printf("No match, card added to board.\n");
-	}
-	*/
 }
 
 // Main function
@@ -195,10 +176,9 @@ int main(void) {
 
     	printf("Board:\n");
     	showCards(board, boardSize);
+
+		printf("==== Player %d ====\n", player + 1);
         play_turn(players[player], board, &boardSize);
-
-		printf("deck index: %d\n", deck_index);
-
 
 		player++;
 		if(player >= PLAYER_COUNT)
