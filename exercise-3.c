@@ -78,6 +78,78 @@ void deleteCard(CARD cards[], int index, int size){
 	cards[card] = NULL_CARD;
 }
 
+char combine(CARD board[], int *boardSize, int value){
+	int i, j, card;
+	char match = 0;
+	// removes the cards, which match with the played card
+	for(card = 0; card < *boardSize; card++){
+		if(value == board[card] % 100){
+			deleteCard(board, card, *boardSize);
+	        (*boardSize)--;
+			match = 1;
+			card = 0;
+		} 
+
+
+		// combining two cards
+		if(value <= 10)
+		for(i = 0; i < *boardSize; i++){
+			if((value == (board[card] + board[i]) % 100) && (card != i)){
+				deleteCard(board, card, *boardSize);
+				(*boardSize)--;
+	
+				if(card < i){
+					deleteCard(board, i - 1, *boardSize);
+					(*boardSize)--;
+				}
+				else {
+					deleteCard(board, i, *boardSize);
+					(*boardSize)--;
+				}
+				match = 1;
+				card = 0;
+				i = 0;
+			}
+	
+			// combining three cards
+			for(j = 0; j < *boardSize; j++){
+				if((value == (board[card] + board[i] + board[j]) % 100) && (card != i) && (card != j) && (i != j)){
+					deleteCard(board, card, *boardSize);
+					(*boardSize)--;
+	
+					if(card < i){
+						deleteCard(board, i - 1, *boardSize);
+						(*boardSize)--;
+					}
+					else {
+						deleteCard(board, i, *boardSize);
+						(*boardSize)--;
+					}
+	
+					if((j < card) && (j < i)){
+						deleteCard(board, j, *boardSize);
+						(*boardSize)--;
+					}
+					else if((card < j) && (j < i)) {
+						deleteCard(board, j - 1, *boardSize);
+						(*boardSize)--;
+					}
+					else {
+						deleteCard(board, j - 2, *boardSize);
+						(*boardSize)--;
+					}
+	
+					match = 1;
+					card = 0;
+					i = 0;
+					j = 0;
+				}
+			}
+		}
+	} 
+	return match;
+}
+
 void play_turn(CARD hand[], CARD board[], int *boardSize) {
 	int i, card, value, numCards = 0;
 
@@ -122,19 +194,9 @@ void play_turn(CARD hand[], CARD board[], int *boardSize) {
 		return;
 	}
 
-	// removes the cards, which match with the played card
-	char match = 0;
-	for(card = 0; card < *boardSize; card++){
-		if(value == board[card] % 100){
-			deleteCard(board, card, *boardSize);
-	        (*boardSize)--;
-			match = 1;
-			card = 0;
-		} 
-	}
 
 	// if there is match, end function
-	if(match)
+	if(combine(board, boardSize, value))
 		return;
 
 	// add the card to the board
