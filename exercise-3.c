@@ -64,9 +64,9 @@ int point_of_card(CARD card) {
     int val = card % 100;
     int suit = card / 100;
 
-    if (val == 1 || val == 11) return 1;
-    if (val == 2 && suit == club) return 2;
-    if (val == 10 && suit == diamond) return 3;
+    if ((val == 1)  || (val == 11))       return 1;
+    if ((val == 2)  && (suit == club))    return 2;
+    if ((val == 10) && (suit == diamond)) return 3;
     return 0;
 }
 
@@ -78,16 +78,19 @@ void deleteCard(CARD cards[], int index, int size){
 	cards[card] = NULL_CARD;
 }
 
-char combine(CARD board[], int *boardSize, int value){
-	int i, j, card;
+char combine(CARD board[], int *boardSize, CARD play, int *scores, int *collected){
+	int i, j, card, value;
 	char match = 0;
+    value = play % 100;
 	// removes the cards, which match with the played card
 	for(card = 0; card < *boardSize; card++){
 		if(value == board[card] % 100){
+			*scores += point_of_card(play) + point_of_card(board[card]);
 			deleteCard(board, card, *boardSize);
 	        (*boardSize)--;
 			match = 1;
 			card = 0;
+			*collected += 2;
 		} 
 
 
@@ -95,6 +98,7 @@ char combine(CARD board[], int *boardSize, int value){
 		if(value <= 10)
 		for(i = 0; i < *boardSize; i++){
 			if((value == (board[card] + board[i]) % 100) && (card != i)){
+				*scores += point_of_card(play) + point_of_card(board[card]) + point_of_card(board[i]);
 				deleteCard(board, card, *boardSize);
 				(*boardSize)--;
 	
@@ -109,11 +113,13 @@ char combine(CARD board[], int *boardSize, int value){
 				match = 1;
 				card = 0;
 				i = 0;
+				*collected += 3;
 			}
 	
 			// combining three cards
 			for(j = 0; j < *boardSize; j++){
 				if((value == (board[card] + board[i] + board[j]) % 100) && (card != i) && (card != j) && (i != j)){
+					*scores += point_of_card(play) +point_of_card(board[card]) +point_of_card(board[i]) +point_of_card(board[j]);
 					deleteCard(board, card, *boardSize);
 					(*boardSize)--;
 	
@@ -143,6 +149,7 @@ char combine(CARD board[], int *boardSize, int value){
 					card = 0;
 					i = 0;
 					j = 0;
+					*collected += 4;
 				}
 			}
 		}
@@ -150,8 +157,8 @@ char combine(CARD board[], int *boardSize, int value){
 	return match;
 }
 
-void play_turn(CARD hand[], CARD board[], int *boardSize) {
-	int i, card, value, numCards = 0;
+void play_turn(CARD hand[], CARD board[], int *boardSize, int *scores, int *collected) {
+	int i, card, numCards = 0;
 
 	// getting the number of cards of this player
 	char nullCardCheck;
@@ -183,21 +190,24 @@ void play_turn(CARD hand[], CARD board[], int *boardSize) {
 	} while(run);
 
 
-    value = play % 100;
 
     printf("Playing: \n");
     showCard(play);
 
 	// if the card is jack and there is card on board, clear the board
-	if((value == 11) && (*boardSize > 0)){
+	if(((play % 100) == 11) && (*boardSize > 0)){
 		*boardSize = 0; 
 		return;
 	}
 
 
 	// if there is match, end function
-	if(combine(board, boardSize, value))
+	if(combine(board, boardSize, play, scores, collected)){
+		if(*boardSize == 0){
+			// bastra
+		}
 		return;
+	}
 
 	// add the card to the board
 	board[*boardSize] = play;
@@ -239,8 +249,8 @@ int main(void) {
     	printf("Board:\n");
     	showCards(board, boardSize);
 
-		printf("==== Player %d ====\n", player + 1);
-        play_turn(players[player], board, &boardSize);
+		printf("========= Player %d =========\n", player + 1);
+        play_turn(players[player], board, &boardSize, &(scores[player]), &(collected[player]));
 
 		player++;
 		if(player >= PLAYER_COUNT)
