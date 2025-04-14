@@ -78,84 +78,95 @@ void deleteCard(CARD cards[], int index, int size){
 	cards[card] = NULL_CARD;
 }
 
-char combine(CARD board[], int *boardSize, CARD play, int *scores, int *collected){
-	int i, j, card, value;
-	char match = 0;
+char combine(CARD board[], int *boardSize, CARD play, int *scores, int *collected) {
+    int i, j, k, l, value;
+    char match = 0;
     value = play % 100;
-	// removes the cards, which match with the played card
-	for(card = 0; card < *boardSize; card++){
-		if(value == board[card] % 100){
-			*scores += point_of_card(play) + point_of_card(board[card]);
-			deleteCard(board, card, *boardSize);
-	        (*boardSize)--;
-			match = 1;
-			card = 0;
-			*collected += 2;
-		} 
 
+    // 1 card
+    for (i = 0; i < *boardSize; i++) {
+        if (value == board[i] % 100) {
+            *scores += point_of_card(play) + point_of_card(board[i]);
+            deleteCard(board, i, *boardSize);
+            (*boardSize)--;
+            *collected += 2;
+            match = 1;
+            return match;
+        }
+    }
 
-		// combining two cards
-		if(value <= 10)
-		for(i = 0; i < *boardSize; i++){
-			if((value == (board[card] + board[i]) % 100) && (card != i)){
-				*scores += point_of_card(play) + point_of_card(board[card]) + point_of_card(board[i]);
-				deleteCard(board, card, *boardSize);
-				(*boardSize)--;
-	
-				if(card < i){
-					deleteCard(board, i - 1, *boardSize);
-					(*boardSize)--;
-				}
-				else {
-					deleteCard(board, i, *boardSize);
-					(*boardSize)--;
-				}
-				match = 1;
-				card = 0;
-				i = 0;
-				*collected += 3;
-			}
-	
-			// combining three cards
-			for(j = 0; j < *boardSize; j++){
-				if((value == (board[card] + board[i] + board[j]) % 100) && (card != i) && (card != j) && (i != j)){
-					*scores += point_of_card(play) +point_of_card(board[card]) +point_of_card(board[i]) +point_of_card(board[j]);
-					deleteCard(board, card, *boardSize);
-					(*boardSize)--;
-	
-					if(card < i){
-						deleteCard(board, i - 1, *boardSize);
-						(*boardSize)--;
-					}
-					else {
-						deleteCard(board, i, *boardSize);
-						(*boardSize)--;
-					}
-	
-					if((j < card) && (j < i)){
-						deleteCard(board, j, *boardSize);
-						(*boardSize)--;
-					}
-					else if((card < j) && (j < i)) {
-						deleteCard(board, j - 1, *boardSize);
-						(*boardSize)--;
-					}
-					else {
-						deleteCard(board, j - 2, *boardSize);
-						(*boardSize)--;
-					}
-	
-					match = 1;
-					card = 0;
-					i = 0;
-					j = 0;
-					*collected += 4;
-				}
-			}
-		}
-	} 
-	return match;
+    // 2 cards
+    for (i = 0; i < *boardSize; i++) {
+        for (j = i + 1; j < *boardSize; j++) {
+            if ((board[i] % 100 + board[j] % 100) == value) {
+                *scores += point_of_card(play) + point_of_card(board[i]) + point_of_card(board[j]);
+                deleteCard(board, j, *boardSize);
+                (*boardSize)--;
+                deleteCard(board, i, *boardSize);
+                (*boardSize)--;
+                *collected += 3;
+                match = 1;
+                return match;
+            }
+        }
+    }
+
+    // 3 cards
+    for (i = 0; i < *boardSize; i++) {
+        for (j = i + 1; j < *boardSize; j++) {
+            for (k = j + 1; k < *boardSize; k++) {
+                if ((board[i] % 100 + board[j] % 100 + board[k] % 100) == value) {
+                    *scores += point_of_card(play) + point_of_card(board[i]) + point_of_card(board[j]) + point_of_card(board[k]);
+
+                    int del[3] = {i, j, k};
+                    for (int m = 2; m >= 0; m--) {
+                        deleteCard(board, del[m], *boardSize);
+                        (*boardSize)--;
+                    }
+
+                    *collected += 4;
+                    match = 1;
+                    return match;
+                }
+            }
+        }
+    }
+
+    //4 cards
+    for (i = 0; i < *boardSize; i++) {
+        for (j = i + 1; j < *boardSize; j++) {
+            for (k = j + 1; k < *boardSize; k++) {
+                for (l = k + 1; l < *boardSize; l++) {
+                    if ((board[i] % 100 + board[j] % 100 + board[k] % 100 + board[l] % 100) == value) {
+                        *scores += point_of_card(play) + point_of_card(board[i]) + point_of_card(board[j]) +
+                                   point_of_card(board[k]) + point_of_card(board[l]);
+
+                        int del[4] = {i, j, k, l};
+                        for (int m = 0; m < 4; m++) {
+                            for (int n = m + 1; n < 4; n++) {
+                                if (del[m] < del[n]) {
+                                    int t = del[m]; del[m] = del[n]; del[n] = t;
+                                }
+                            }
+                        }
+
+                        for (int m = 0; m < 4; m++) {
+                            deleteCard(board, del[m], *boardSize);
+                            (*boardSize)--;
+                        }
+
+                        *collected += 5;
+                        match = 1;
+                        return match;
+                    }
+                }
+            }
+        }
+    }
+
+    return match;
 }
+
 
 void play_turn(CARD hand[], CARD board[], int *boardSize, int *scores, int *collected) {
 	int i, card, numCards = 0;
