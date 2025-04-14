@@ -196,6 +196,9 @@ void play_turn(CARD hand[], CARD board[], int *boardSize, int *scores, int *coll
 
 	// if the card is jack and there is card on board, clear the board
 	if(((play % 100) == 11) && (*boardSize > 0)){
+		for(int i = 0; i < *boardSize; i++){
+			*scores += point_of_card(board[i]);
+		}
 		*boardSize = 0; 
 		return;
 	}
@@ -204,7 +207,7 @@ void play_turn(CARD hand[], CARD board[], int *boardSize, int *scores, int *coll
 	// if there is match, end function
 	if(combine(board, boardSize, play, scores, collected)){
 		if(*boardSize == 0){
-			// bastra
+			*scores += 10;
 		}
 		return;
 	}
@@ -257,10 +260,18 @@ int main(void) {
 			player = 0;
     }
 
+	int winner_point = 0, winner = 0;
+
     printf("\n--- Final Scores ---\n");
     for (int p = 0; p < PLAYER_COUNT; p++) {
         printf("Player %d: %d points, %d cards collected\n", p + 1, scores[p], collected[p]);
+		if(winner_point < scores[p]){
+			winner_point = scores[p];
+			winner = p + 1;
+		}
     }
+
+	printf("Player %d won!\n", winner);
 
     return 0;
 }
